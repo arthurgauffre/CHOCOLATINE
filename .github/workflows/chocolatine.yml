@@ -1,0 +1,49 @@
+name: chocolatine
+run-name: ${{ github.actor }} asking chocolatine
+on:
+  push:
+  pull_request:
+    branches-ignore:
+      - 'ga-ignore-'
+jobs:
+
+  coding-style:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout GH repository
+        uses: actions/checkout@master
+
+      - name: Get banana script
+        run: curl https://raw.githubusercontent.com/Epitech/coding-style-checker/main/coding-style.sh -o /tmp/coding-style.sh; chmod +x /tmp/coding-style.sh
+
+      - name: Run coding-style.sh
+        run: /tmp/coding-style.sh . .
+
+      - name: Display banana report
+        run: cat coding-style-reports.log
+
+      - name: Report banana result
+        run: |
+          NB_ERROR=$(cat coding-style-reports.log | wc -l)
+          if [ $NB_ERROR -gt 0 ]; then
+              ERRORS=$(cat coding-style-reports.log);
+              echo "Banana found $NB_ERROR error(s)"
+              echo "$ERRORS"
+              exit 1
+          fi
+              echo "Everything is good ! Keep on coding !"
+              exit 0
+
+  mirror_url:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url:
+            git@github.com:EpitechPromo2027/B-DOP-200-BDX-2-1-chocolatine-arthur.gauffre.git
+          ssh_private_key:
+            ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
