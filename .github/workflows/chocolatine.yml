@@ -1,40 +1,87 @@
 name: chocolatine
-run-name: ${{ github.actor }} asking chocolatine
+run-name: ${{github.actor}} verifying my code
 on:
   push:
+    branches-ignore:
+      - " ga-ignore-"
   pull_request:
     branches-ignore:
-      - 'ga-ignore-'
+      - " ga-ignore-"
 jobs:
-
-  coding-style:
+  check_coding_style:
     runs-on: ubuntu-latest
     container: ghcr.io/epitech/coding-style-checker:latest
     steps:
 
       - name: Checkout GH repository
         uses: actions/checkout@master
+        with:
+          repository: ''
 
-      - name: Run coding-style.sh
+      - name: Run coding-style
         run: check.sh . /tmp
 
-      - name: Display banana report
-        run: cat /tmp/coding-style-reports.log
+      - name: Create annotation for coding-style errors
+        run: |
+          input=/tmp/coding-style-reports.log
+          while IFS= read -r -a line; do
+            fields=($(printf "%s" "$line"|cut -d':' --output-delimiter=' ' -f1-))
+            echo "::error title=${fields[2]} coding style error,file=${fields[0]},line=${fields[1]}::${fields[3]}"
+          done < $input
 
       - name: Report banana result
         run: |
           NB_ERROR=$(cat /tmp/coding-style-reports.log | wc -l)
           if [ $NB_ERROR -gt 0 ]; then
-              ERRORS=$(cat /tmp/coding-style-reports.log);
-              echo "Banana found $NB_ERROR error(s)"
-              echo "$ERRORS"
-              exit 1
+            exit 1
           fi
-              echo "Everything is good ! Keep on coding !"
-              exit 0
 
-  mirror_url:
+  check_program_compilation:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
+    container: epitechcontent/epitest-docker:latest
+    needs: check_coding_style
+    steps:
+
+      - name: Checkout GH repository
+        uses: actions/checkout@master
+        with:
+          repository: ''
+
+      - name: Compile repository
+        run: make
+
+      - name: Clean repository
+        run: make clean
+
+      - name: Check file
+        run: |
+          for file in ${{ vars.EXECUTABLES }};do
+             if [ ! -x "$file" ]; then
+              echo"File $file does not exist or is not executable"
+              exit 1
+            fi
+          done
+
+  run_tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    container: epitechcontent/epitest-docker:latest
+    needs:  check_program_compilation
+    steps:
+
+      - name: Checkout GH repository
+        uses: actions/checkout@master
+        with:
+          repository: ''
+
+      - name: Compile tests binaries
+        run: make tests_run
+
+  push_to_mirror:
+    runs-on: ubuntu-latest
+    needs:  run_tests
+    if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v3
         with:
@@ -42,6 +89,6 @@ jobs:
       - uses: pixta-dev/repository-mirroring-action@v1
         with:
           target_repo_url:
-            git@github.com:EpitechPromo2027/B-DOP-200-BDX-2-1-chocolatine-arthur.gauffre.git
+            ${{ vars.MIRROR_URL }}
           ssh_private_key:
-            ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
+            ${{ secrets.GIT_SSH_PRIVATE_KEY }}
