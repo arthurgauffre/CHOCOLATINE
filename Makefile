@@ -5,7 +5,8 @@
 ## compil antman binary
 ##
 
-SRC		=	main.c
+SRC		=	main.c \
+			print_hello.c
 
 DIR_SRC 	= 	$(addprefix src/, $(SRC))
 
@@ -24,7 +25,7 @@ $(NAME):	$(OBJ)
 	gcc -o $(NAME) $(OBJ)
 
 clean:
-	rm -f $(OBJ) vgcore* *.gc*
+	rm -f $(OBJ) vgcore* *.gc* unit_tests
 
 fclean:	clean
 	rm -f $(NAME)
@@ -32,7 +33,8 @@ fclean:	clean
 re:	fclean all
 
 tests_run:
-	gcc -o unit_tests $(SRC) tests/test_my_printf.c --coverage -lcriterion
+	gcc -o unit_tests src/print_hello.c tests/test_print_hello.c --coverage \
+	-lcriterion $(CPPFLAGS)
 	./unit_tests
 
 .PHONY: all clean fclean re tests_run

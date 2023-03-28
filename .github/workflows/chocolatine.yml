@@ -1,5 +1,5 @@
 name: chocolatine
-run-name: ${{github.actor}} verifying my code
+run-name: ${{github.actor}} check my code
 on:
   push:
     branches-ignore:

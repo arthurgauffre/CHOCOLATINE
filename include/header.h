@@ -12,4 +12,6 @@
 #ifndef HEADER
     #define HEADER
 
+    void print_hello(void);
+
 #endif /* !HEADER */

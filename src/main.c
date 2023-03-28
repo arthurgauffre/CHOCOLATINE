@@ -6,9 +6,10 @@
 */
 
 #include <stdio.h>
+#include "header.h"
 
 int main(void)
 {
-    printf("hello!\n");
+    print_hello();
     return 0;
 }
