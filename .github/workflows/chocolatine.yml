@@ -2,13 +2,13 @@ name: chocolatine
 run-name: ${{github.actor}} check my code
 on:
   push:
-    branches-ignore:
+    branches-ignore:  # <---- ignore the "ga-ignore-" branch when push
       - " ga-ignore-"
   pull_request:
-    branches-ignore:
+    branches-ignore:  # <---- ignore the "ga-ignore-" branch when pull-request
       - " ga-ignore-"
 jobs:
-  check_coding_style:
+  check_coding_style:  # <---- check inw
     runs-on: ubuntu-latest
     container: ghcr.io/epitech/coding-style-checker:latest
     steps:
@@ -91,4 +91,4 @@ jobs:
           target_repo_url:
             ${{ vars.MIRROR_URL }}
           ssh_private_key:
-            ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+            ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
